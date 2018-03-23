@@ -197,6 +197,42 @@ func (s *Shell) AddWithOpts(r io.Reader, pin bool, rawLeaves bool) (string, erro
 	return out.Hash, nil
 }
 
+func (s *Shell) AddOnlyHash(r io.Reader) (string, error) {
+	var rc io.ReadCloser
+	if rclose, ok := r.(io.ReadCloser); ok {
+		rc = rclose
+	} else {
+		rc = ioutil.NopCloser(r)
+	}
+
+	// handler expects an array of files
+	fr := files.NewReaderFile("", "", rc, nil)
+	slf := files.NewSliceFile("", "", []files.File{fr})
+	fileReader := files.NewMultiFileReader(slf, true)
+
+	req := NewRequest(context.Background(), s.url, "add")
+	req.Body = fileReader
+	req.Opts["progress"] = "false"
+	req.Opts["only-hash"] = "true"
+
+	resp, err := req.Send(s.httpcli)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Close()
+	if resp.Error != nil {
+		return "", resp.Error
+	}
+
+	var out object
+	err = json.NewDecoder(resp.Output).Decode(&out)
+	if err != nil {
+		return "", err
+	}
+
+	return out.Hash, nil
+}
+
 func (s *Shell) AddLink(target string) (string, error) {
 	link := files.NewLinkFile("", "", target, nil)
 	slf := files.NewSliceFile("", "", []files.File{link})
