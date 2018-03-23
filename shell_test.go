@@ -43,6 +43,23 @@ func TestAddDir(t *testing.T) {
 	is.Equal(cid, "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv")
 }
 
+func TestWrapWithDir(t *testing.T) {
+	is := is.New(t)
+	s := NewShell(shellUrl)
+
+	childs, err := s.List("QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv")
+	is.Nil(err)
+
+	testMap := make(map[string]string)
+	for _, child := range childs {
+		testMap[child.Hash] = child.Name
+	}
+
+	mhash, err := s.WrapWithDir(testMap)
+	is.Nil(err)
+	is.Equal(mhash, "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv")
+}
+
 func TestLocalShell(t *testing.T) {
 	is := is.New(t)
 	s := NewLocalShell()

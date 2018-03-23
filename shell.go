@@ -307,6 +307,22 @@ func (s *Shell) AddDir(dir string) (string, error) {
 	return final, nil
 }
 
+func (s *Shell) WrapWithDir(dataMap map[string]string) (string, error) {
+	wd, err := s.NewObject("unixfs-dir")
+	if err != nil {
+		return "", err
+	}
+
+	for hash, name := range dataMap {
+		wd, err = s.PatchLink(wd, name, hash, false)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	return wd, nil
+}
+
 const (
 	TRaw = iota
 	TDirectory
