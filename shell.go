@@ -147,15 +147,15 @@ type object struct {
 
 // Add a file to ipfs from the given reader, returns the hash of the added file
 func (s *Shell) Add(r io.Reader) (string, error) {
-	return s.AddWithOpts(r, true, false)
+	return s.AddWithOpts(r, true, false, false)
 }
 
 // AddNoPin a file to ipfs from the given reader, returns the hash of the added file without pinning the file
 func (s *Shell) AddNoPin(r io.Reader) (string, error) {
-	return s.AddWithOpts(r, false, false)
+	return s.AddWithOpts(r, false, false, false)
 }
 
-func (s *Shell) AddWithOpts(r io.Reader, pin bool, rawLeaves bool) (string, error) {
+func (s *Shell) AddWithOpts(r io.Reader, pin bool, rawLeaves bool, onlyHash bool) (string, error) {
 	var rc io.ReadCloser
 	if rclose, ok := r.(io.ReadCloser); ok {
 		rc = rclose
@@ -179,41 +179,9 @@ func (s *Shell) AddWithOpts(r io.Reader, pin bool, rawLeaves bool) (string, erro
 		req.Opts["raw-leaves"] = "true"
 	}
 
-	resp, err := req.Send(s.httpcli)
-	if err != nil {
-		return "", err
+	if onlyHash {
+		req.Opts["only-hash"] = "true"
 	}
-	defer resp.Close()
-	if resp.Error != nil {
-		return "", resp.Error
-	}
-
-	var out object
-	err = json.NewDecoder(resp.Output).Decode(&out)
-	if err != nil {
-		return "", err
-	}
-
-	return out.Hash, nil
-}
-
-func (s *Shell) AddOnlyHash(r io.Reader) (string, error) {
-	var rc io.ReadCloser
-	if rclose, ok := r.(io.ReadCloser); ok {
-		rc = rclose
-	} else {
-		rc = ioutil.NopCloser(r)
-	}
-
-	// handler expects an array of files
-	fr := files.NewReaderFile("", "", rc, nil)
-	slf := files.NewSliceFile("", "", []files.File{fr})
-	fileReader := files.NewMultiFileReader(slf, true)
-
-	req := NewRequest(context.Background(), s.url, "add")
-	req.Body = fileReader
-	req.Opts["progress"] = "false"
-	req.Opts["only-hash"] = "true"
 
 	resp, err := req.Send(s.httpcli)
 	if err != nil {
@@ -305,22 +273,6 @@ func (s *Shell) AddDir(dir string) (string, error) {
 	}
 
 	return final, nil
-}
-
-func (s *Shell) WrapWithDir(dataMap map[string]string) (string, error) {
-	wd, err := s.NewObject("unixfs-dir")
-	if err != nil {
-		return "", err
-	}
-
-	for hash, name := range dataMap {
-		wd, err = s.PatchLink(wd, name, hash, false)
-		if err != nil {
-			return "", err
-		}
-	}
-
-	return wd, nil
 }
 
 const (
