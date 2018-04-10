@@ -228,7 +228,7 @@ func (s *Shell) AddLink(target string) (string, error) {
 }
 
 // AddDir adds a directory recursively with all of the files under it
-func (s *Shell) AddDir(dir string) (string, error) {
+func (s *Shell) AddDir(dir string, onlyHash bool) (string, error) {
 	stat, err := os.Lstat(dir)
 	if err != nil {
 		return "", err
@@ -243,6 +243,10 @@ func (s *Shell) AddDir(dir string) (string, error) {
 
 	req := NewRequest(context.Background(), s.url, "add")
 	req.Opts["r"] = "true"
+	if onlyHash {
+		req.Opts["only-hash"] = "true"
+	}
+
 	req.Body = reader
 
 	resp, err := req.Send(s.httpcli)

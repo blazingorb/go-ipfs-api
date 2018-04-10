@@ -38,9 +38,9 @@ func TestAddDir(t *testing.T) {
 	is := is.New(t)
 	s := NewShell(shellUrl)
 
-	cid, err := s.AddDir("./testdata")
+	cid, err := s.AddDir("./testdata", false)
 	is.Nil(err)
-	is.Equal(cid, "QmS4ustL54uo8FzR9455qaxZwuMiUhyvMcX9Ba8nUH4uVv")
+	is.Equal(cid, "QmfXtxPrp3f1WvsSc4Q66wSFZjRJT1iyrgY7A9V9TkbdGS")
 }
 
 func TestLocalShell(t *testing.T) {
