@@ -269,6 +269,8 @@ func (s *Shell) AddDir(dir string, onlyHash bool) (string, error) {
 			}
 			return "", err
 		}
+		fmt.Printf("Out: %+v \n", out)
+
 		final = out.Hash
 	}
 

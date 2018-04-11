@@ -43,6 +43,15 @@ func TestAddDir(t *testing.T) {
 	is.Equal(cid, "QmfXtxPrp3f1WvsSc4Q66wSFZjRJT1iyrgY7A9V9TkbdGS")
 }
 
+func TestAddDirOnlyHash(t *testing.T) {
+	is := is.New(t)
+	s := NewShell(shellUrl)
+
+	cid, err := s.AddDir("./testdata", true)
+	is.Nil(err)
+	is.Equal(cid, "QmfXtxPrp3f1WvsSc4Q66wSFZjRJT1iyrgY7A9V9TkbdGS")
+}
+
 func TestLocalShell(t *testing.T) {
 	is := is.New(t)
 	s := NewLocalShell()
